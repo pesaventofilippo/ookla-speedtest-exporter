@@ -38,7 +38,7 @@ def run_speedtest():
     METRICS["downloaded_bytes"].inc(st["download"]["bytes"])
     METRICS["upload_speed"].set(st["upload"]["bandwidth"]*8)
     METRICS["uploaded_bytes"].inc(st["upload"]["bytes"])
-    METRICS["packet_loss"].set(st["packetLoss"])
+    METRICS["packet_loss"].set(st.get("packetLoss", 0))
 
     for entry in st["serverSelection"]["servers"]:
         server = entry["server"]
