@@ -41,6 +41,9 @@ def run_speedtest():
     METRICS["packet_loss"].set(st.get("packetLoss", 0))
 
     for entry in st["serverSelection"]["servers"]:
+        if entry.get("latency") is None:
+            continue
+
         server = entry["server"]
         METRICS["server_pings"].labels(
             server_id=server["id"],
