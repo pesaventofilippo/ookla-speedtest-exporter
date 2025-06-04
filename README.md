@@ -8,11 +8,13 @@ This is a very basic Prometheus exporter for [Ookla Speedtest](https://www.speed
 The exporter is configured using environment variables.  
 Every variable has a default value, so you can just run the exporter without setting any of them, if you want.
 
-| Variable             | Description                            | Default       |
-|----------------------|----------------------------------------|---------------|
-| `PROMETHEUS_PORT`    | Port the exporter listens on           | `8000`        |
-| `PROMETHEUS_PREFIX`  | Prefix for the Prometheus metrics      | `"speedtest"` |
-| `SPEEDTEST_INTERVAL` | Interval between speedtests in seconds | `3600`        |
+| Variable             | Description                             | Default       |
+|----------------------|-----------------------------------------|---------------|
+| `PROMETHEUS_PORT`    | Port the exporter listens on            | `8000`        |
+| `PROMETHEUS_PREFIX`  | Prefix for the Prometheus metrics       | `"speedtest"` |
+| `SPEEDTEST_INTERVAL` | Interval between speedtests in seconds  | `3600`        |
+| `PING_INTERVAL`      | Interval between pings in seconds       | `60`          |
+| `PING_TARGETS`       | Comma-separated list of targets to ping | `""`          |
 
 ## Docker
 The exporter is available as a Docker image on the [GitHub Container Registry](https://ghcr.io/pesaventofilippo/ookla-speedtest-exporter).

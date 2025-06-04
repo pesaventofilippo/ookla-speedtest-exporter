@@ -2,13 +2,11 @@ import json
 import subprocess
 
 
-def _run_cmd(args: list[str]) -> dict:
+def run() -> dict:
     try:
         result = subprocess.run(
-            ["/usr/local/bin/speedtest", "--accept-license", "--accept-gdpr", "--format=json", *args],
-            capture_output=True,
-            text=True,
-            check=True
+            ["/usr/local/bin/speedtest", "--accept-license", "--accept-gdpr", "--format=json", "--selection-details"],
+            capture_output=True, text=True, check=True
         )
 
         speedtest_data = json.loads(result.stdout)
@@ -18,9 +16,15 @@ def _run_cmd(args: list[str]) -> dict:
         return None
 
 
-def run() -> dict:
-    return _run_cmd(["--selection-details"])
+def ping(target: str, timeout_ms: int=300) -> float:
+    try:
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", str(timeout_ms), target],
+            capture_output=True, text=True, check=True
+        )
 
+        latency = result.stdout.split("time=", 1)[1].split(" ", 1)[0]
+        return float(latency)
 
-def list_servers() -> dict:
-    return _run_cmd(["--servers"])
+    except Exception:
+        return None

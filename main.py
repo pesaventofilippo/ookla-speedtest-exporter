@@ -37,9 +37,17 @@ METRICS = {
         name="server_ping", documentation="List of server pings (ms)",
         labelnames=["server_id", "host", "name", "location"], namespace=env.PROMETHEUS_PREFIX, unit="ms"
     ),
+    "custom_ping": prom.Gauge(
+        name="custom_ping", documentation="List of custom pings (ms)",
+        labelnames=["target"], namespace=env.PROMETHEUS_PREFIX, unit="ms"
+    ),
     "failed_tests": prom.Counter(
         name="failed_tests", documentation="Number of failed tests",
         namespace=env.PROMETHEUS_PREFIX
+    ),
+    "failed_pings": prom.Counter(
+        name="failed_pings", documentation="Number of failed custom pings",
+        labelnames=["target"], namespace=env.PROMETHEUS_PREFIX
     )
 }
 
@@ -71,10 +79,26 @@ def run_speedtest():
         ).set(entry["latency"])
 
 
+def run_ping(target: str):
+    ping = speedtest.ping(target)
+    if ping is None:
+        METRICS["failed_pings"].labels(target=target).inc()
+        return
+
+    METRICS["custom_ping"].labels(target=target).set(ping)
+
+
 def speedtest_loop():
     while True:
         run_speedtest()
         sleep(env.SPEEDTEST_INTERVAL)
+
+
+def ping_loop():
+    while True:
+        for target in env.PING_TARGETS:
+            run_ping(target)
+        sleep(env.PING_INTERVAL)
 
 
 if __name__ == "__main__":
@@ -83,6 +107,10 @@ if __name__ == "__main__":
     prom.REGISTRY.unregister(prom.PROCESS_COLLECTOR)
     prom.REGISTRY.unregister(prom.PLATFORM_COLLECTOR)
 
-    Thread(target=speedtest_loop, daemon=True).start()
+    if env.SPEEDTEST_INTERVAL > 0:
+        Thread(target=speedtest_loop, daemon=True).start()
+    if env.PING_INTERVAL > 0 and env.PING_TARGETS:
+        Thread(target=ping_loop, daemon=True).start()
+
     _, web_thread = prom.start_http_server(addr="0.0.0.0", port=env.PROMETHEUS_PORT)
     web_thread.join()
